@@ -1,10 +1,8 @@
 #pragma once
 
-#include <chrono>
 #include <concepts>
 #include <cstdint>
 #include <format>
-#include <fstream>
 #include <iostream>
 #include <source_location>
 
@@ -29,5 +27,12 @@ public:
         return loc;
     }
 };
+
+template <typename... Args>
+void LogInfo(with_source_location<std::format_string<Args...>> fmt, Args &&...args) {
+    const auto &loc = fmt.location();
+    std::cout << loc.file_name() << ":" << loc.line() << " [Info]"
+              << std::vformat(fmt.format().get(), std::make_format_args(args...)) << "\n";
+}
 
 }  // namespace cutelog
