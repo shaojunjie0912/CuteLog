@@ -1,10 +1,13 @@
-#pragma once
+// #pragma once
 
 #include <concepts>
 #include <cstdint>
 #include <format>
 #include <iostream>
 #include <source_location>
+
+using std::cout;
+using std::endl;
 
 namespace cutelog {
 
@@ -34,6 +37,8 @@ std::string LogLevelName(LogLevel lev) {
     return "unknown";
 }
 
+static LogLevel max_level = LogLevel::INFO;
+
 template <typename T>
 struct with_source_location {
 private:
@@ -55,10 +60,20 @@ public:
 };
 
 template <typename... Args>
-void Log(with_source_location<std::format_string<Args...>> fmt, Args &&...args) {
-    const auto &loc = fmt.location();
-    std::cout << loc.file_name() << ":" << loc.line() << " [Info]"
-              << std::vformat(fmt.format().get(), std::make_format_args(args...)) << "\n";
+void GenericLog(LogLevel lev, with_source_location<std::format_string<Args...>> fmt,
+                Args &&...args) {
+    if (lev >= max_level) {
+        const auto &loc = fmt.location();
+        std::cout << loc.file_name() << ":" << loc.line() << " [Info]"
+                  << std::vformat(fmt.format().get(), std::make_format_args(args...)) << "\n";
+    }
 }
 
 }  // namespace cutelog
+
+int main() {
+    using namespace cutelog;
+    GenericLog(LogLevel::DEBUG, "debug");
+    GenericLog(LogLevel::CRITICAL, "info");
+    return 0;
+}
